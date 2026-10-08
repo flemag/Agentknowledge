@@ -12,6 +12,12 @@ npm run dev
 
 Puis ouvrir http://localhost:3000, /api/health et /api/db-check.
 
+## Endpoints
+
+- `GET /api/health` : état de l'application.
+- `GET /api/db-check` : test de connexion à la base.
+- `GET /api/entries` : recherche de fiches actives. Paramètres facultatifs : `format`, `tags` (séparés par des virgules), `q` (recherche plein texte en français), `limit` (1 à 100, défaut 20). Exemple : `/api/entries?tags=physique&limit=5`.
+
 ## Déploiement
 
 1. Pousser le dépôt sur GitHub.
