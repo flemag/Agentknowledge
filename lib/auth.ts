@@ -15,5 +15,5 @@ export async function authenticateAgent(req: Request): Promise<{ id: string; nom
   if (!match) return null;
 
   const rows = await sql`SELECT id, nom FROM agent WHERE cle_api_hash = ${hashKey(match[1])} LIMIT 1`;
-  return rows[0] ?? null;
+    return (rows[0] as { id: string; nom: string } | undefined) ?? null;
 }
