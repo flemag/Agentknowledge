@@ -77,7 +77,7 @@ export async function GET(req: Request) {
   `;
 
   try {
-    const rows = await sql.query(text, params);
+    const rows = await sql(text, params);
     return Response.json({ ok: true, count: rows.length, results: rows });
   } catch (err) {
     console.error("GET /api/entries failed", err);
