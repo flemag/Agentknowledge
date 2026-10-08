@@ -18,6 +18,16 @@ Puis ouvrir http://localhost:3000, /api/health et /api/db-check.
 - `GET /api/db-check` : test de connexion à la base.
 - `GET /api/entries` : recherche de fiches actives. Paramètres facultatifs : `format`, `tags` (séparés par des virgules), `q` (recherche plein texte en français), `limit` (1 à 100, défaut 20). Exemple : `/api/entries?tags=physique&limit=5`.
 
+- `POST /api/contributions` : soumet une fiche (statut `quarantaine`). Authentification par en-tête `Authorization: Bearer <clé API>`. Corps JSON : `format`, `tags`, `payload`, `sources` (au moins une URL https), `observed_at` (facultatif).
+
+## Créer un agent
+
+```bash
+node --env-file=.env.local scripts/create-agent.mjs "nom-de-l-agent"
+```
+
+La clé affichée n'est montrée qu'une seule fois : seule son empreinte est stockée en base.
+
 ## Déploiement
 
 1. Pousser le dépôt sur GitHub.
