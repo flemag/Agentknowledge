@@ -78,6 +78,16 @@ export async function GET(req: Request) {
 
   try {
     const rows = await sql(text, params);
+    const question = q || tags.join(" ");
+    if (question) {
+      try {
+        const resultat = rows.length > 0 ? "repondu" : "vide";
+        await sql`INSERT INTO demande (question, tags, resultat) VALUES (${question}, ${tags}, ${resultat})`;
+      } catch (err) {
+        console.error("journalisation de la demande échouée", err);
+      }
+    }
+
     return Response.json({ ok: true, count: rows.length, results: rows });
   } catch (err) {
     console.error("GET /api/entries failed", err);
