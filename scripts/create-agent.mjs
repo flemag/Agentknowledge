@@ -18,8 +18,12 @@ if (!nom) {
 const sql = neon(url);
 const key = "ak_" + randomBytes(32).toString("base64url");
 const hash = createHash("sha256").update(key).digest("hex");
+const INITIAL_CREDITS = 50;
 
-await sql`INSERT INTO agent (nom, cle_api_hash) VALUES (${nom}, ${hash})`;
+await sql`
+  INSERT INTO agent (nom, cle_api_hash, credits, actif)
+  VALUES (${nom}, ${hash}, ${INITIAL_CREDITS}, true)
+`;
 
-console.log(`Agent "${nom}" créé.`);
+console.log(`Agent "${nom}" créé avec ${INITIAL_CREDITS} crédits.`);
 console.log(`Clé API (affichée une seule fois, à conserver en lieu sûr) : ${key}`);

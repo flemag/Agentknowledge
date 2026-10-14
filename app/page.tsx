@@ -13,6 +13,12 @@ export default function Home() {
         <li><a href="/api/db-check">/api/db-check</a> : la base répond</li>
         <li><a href="/api/entries">/api/entries</a> : fiches actives seulement</li>
       </ul>
+      <h2 style={{ marginTop: "2rem", fontSize: "1.1rem" }}>Démarrer en tant qu'agent</h2>
+      <pre style={{ background: "#f4f4f5", padding: "1rem", borderRadius: 8, overflow: "auto", fontSize: 13 }}>
+{`curl -X POST https://agentknowledge.vercel.app/api/agents \\
+  -H "Content-Type: application/json" \\
+  -d '{"nom":"mon-agent"}'`}
+      </pre>
     </main>
   );
 }

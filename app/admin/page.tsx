@@ -19,9 +19,9 @@ type TagRow = { tag: string; n: number };
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ remis?: string }>;
+  searchParams: Promise<{ remis?: string; activees?: string }>;
 }) {
-  const { remis } = await searchParams;
+  const { remis, activees } = await searchParams;
 
   const entriesRows = (await sql`
     SELECT
@@ -67,6 +67,27 @@ export default async function Page({
 
       {remis ? (
         <p className="ak-callout">{remis} fiche{remis === "1" ? "" : "s"} remise{remis === "1" ? "" : "s"} en quarantaine.</p>
+      ) : null}
+
+      {activees ? (
+        <p className="ak-callout">{activees} fiche{activees === "1" ? "" : "s"} activée{activees === "1" ? "" : "s"}.</p>
+      ) : null}
+
+      {entries.quarantaine > 0 ? (
+        <section className="ak-callout">
+          <p>
+            {entries.quarantaine} fiche{entries.quarantaine > 1 ? "s" : ""} en quarantaine.
+            Tu peux les activer d'un coup pour alimenter l'API publique, ou les relire une par une.
+          </p>
+          <div className="ak-row">
+            <Link className="ak-btn ak-btn-ink" href="/admin/fiches?statut=quarantaine">Relire la quarantaine</Link>
+            <form action="/api/admin/activate-quarantine" method="post">
+              <button className="ak-btn ak-btn-pine" type="submit">
+                Activer toute la quarantaine
+              </button>
+            </form>
+          </div>
+        </section>
       ) : null}
 
       {entries.quarantaine === 0 && entries.actives > 0 ? (

@@ -1,4 +1,5 @@
 import { sql } from "@/lib/db";
+import { authenticateAgent, debitCredits } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -6,14 +7,17 @@ const FORMATS = ["fait_source", "serie_temporelle", "comparatif", "definition", 
 const MAX_TAGS = 10;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
+const COST_PER_QUERY = 1;
 
-function badRequest(message: string) {
-  return Response.json({ ok: false, error: message }, { status: 400 });
+function badRequest(message: string, status = 400) {
+  return Response.json({ ok: false, error: message }, { status });
 }
 
 /**
  * GET /api/entries?format=&tags=a,b&q=&limit=
- * Ne renvoie que les fiches au statut "active" (les fiches en quarantaine ne sont jamais exposées).
+ * Ne renvoie que les fiches au statut "active".
+ * Sans clé : lecture libre (limite standard).
+ * Avec clé Bearer : 1 crédit débité, solde renvoyé dans la réponse.
  */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -44,7 +48,18 @@ export async function GET(req: Request) {
     ? Math.min(Math.max(Math.trunc(limitParam), 1), MAX_LIMIT)
     : DEFAULT_LIMIT;
 
-  // Filtres construits avec des paramètres liés ($1, $2...) : aucune valeur utilisateur n'est injectée dans le SQL.
+  // Authentification optionnelle : si clé fournie, on débite 1 crédit.
+  const agent = await authenticateAgent(req);
+  let creditsRemaining: number | undefined;
+
+  if (agent) {
+    const newBalance = await debitCredits(agent.id, COST_PER_QUERY);
+    if (newBalance === null) {
+      return badRequest("crédits insuffisants", 402);
+    }
+    creditsRemaining = newBalance;
+  }
+
   const conditions: string[] = ["statut = 'active'"];
   const params: unknown[] = [];
 
@@ -88,7 +103,16 @@ export async function GET(req: Request) {
       }
     }
 
-    return Response.json({ ok: true, count: rows.length, results: rows });
+    const body: Record<string, unknown> = {
+      ok: true,
+      count: rows.length,
+      results: rows,
+    };
+    if (creditsRemaining !== undefined) {
+      body.credits = creditsRemaining;
+    }
+
+    return Response.json(body);
   } catch (err) {
     console.error("GET /api/entries failed", err);
     return Response.json({ ok: false, error: "requête échouée" }, { status: 500 });

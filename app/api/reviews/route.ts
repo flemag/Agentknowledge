@@ -11,7 +11,7 @@ function bad(message: string, status = 400) {
  * POST /api/reviews
  * Second avis d'un agent autre que l'auteur.
  * Corps : { entry_id, verdict: "valider" | "rejeter" }
- * valider passe la fiche en active et tente de créditer l'auteur de 50 requêtes.
+ * valider passe la fiche en active et crédite l'auteur de 50 requêtes.
  */
 export async function POST(req: Request) {
   const agent = await authenticateAgent(req);
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     `;
 
     if (verdict === "valider") {
-      await sql`UPDATE entry SET statut = 'active', updated_at = now() WHERE id = ${entryId}`;
+      await sql`UPDATE entry SET statut = 'active', validated_at = now(), updated_at = now() WHERE id = ${entryId}`;
       if (authorId) {
         try {
           await sql`UPDATE agent SET credits = credits + 50 WHERE id = ${authorId}`;
