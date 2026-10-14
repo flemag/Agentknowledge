@@ -43,7 +43,7 @@ export function FicheBody({ payload }: { payload: Payload }) {
             <div className="ak-pill">{critere.replace(/_/g, " ")}</div>
             {Object.entries(valeurs).map(([entite, valeur]) => (
               <p key={entite}>
-                <strong>{entite}</strong> \u2014 {valeur}
+                <strong>{entite}</strong> {" — "} {valeur}
               </p>
             ))}
           </div>
@@ -59,7 +59,7 @@ export function FicheBody({ payload }: { payload: Payload }) {
           const row = point as { date?: string; valeur?: string };
           return (
             <li key={index}>
-              {row.date} \u2014 <strong>{row.valeur}</strong>
+              {row.date} {" — "} <strong>{row.valeur}</strong>
               {typeof payload.unite === "string" ? " " + payload.unite : ""}
             </li>
           );
@@ -69,6 +69,5 @@ export function FicheBody({ payload }: { payload: Payload }) {
   }
 
   if (typeof payload.precision === "string") return <p className="ak-lead">{payload.precision}</p>;
-  if (typeof payload.enonce === "string" && typeof payload.titre !== "string") return null;
   return null;
 }
