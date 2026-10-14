@@ -1,32 +1,32 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import "./admin.css";
 
 const NAV = [
   { href: "/admin", label: "Vue d'ensemble" },
+  { href: "/admin/fiches", label: "Toutes les fiches" },
   { href: "/admin/quarantaine", label: "Quarantaine" },
-  { href: "/admin/demandes", label: "Demandes sans réponse" },
+  { href: "/admin/demandes", label: "Lacunes" },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", fontFamily: "system-ui, sans-serif" }}>
-      <aside style={{ width: 220, background: "#111827", color: "#e5e7eb", padding: "1.5rem 1rem" }}>
-        <strong>AgentKnowledge</strong>
-        <div style={{ opacity: 0.6, fontSize: 12, marginBottom: 24 }}>Administration</div>
-        <nav style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {NAV.map((n) => (
-            <Link key={n.href} href={n.href} style={{ color: "#e5e7eb", textDecoration: "none" }}>
-              {n.label}
+    <div className="ak">
+      <aside className="ak-side">
+        <p className="ak-brand">AgentKnowledge</p>
+        <p className="ak-kicker">Bureau</p>
+        <nav className="ak-nav">
+          {NAV.map((item) => (
+            <Link key={item.href} href={item.href}>
+              {item.label}
             </Link>
           ))}
         </nav>
-        <form action="/api/admin/logout" method="post" style={{ marginTop: 32 }}>
-          <button type="submit" style={{ background: "transparent", color: "#9ca3af", border: "none", cursor: "pointer" }}>
-            Se déconnecter
-          </button>
+        <form action="/api/admin/logout" method="post">
+          <button className="ak-logout" type="submit">Se déconnecter</button>
         </form>
       </aside>
-      <main style={{ flex: 1, padding: "2rem", background: "#f9fafb", color: "#111827" }}>{children}</main>
+      <main className="ak-main">{children}</main>
     </div>
   );
 }
