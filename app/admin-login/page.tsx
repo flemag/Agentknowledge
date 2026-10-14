@@ -1,3 +1,5 @@
+import "../admin/admin.css";
+
 export const dynamic = "force-dynamic";
 
 export default async function Page({
@@ -7,16 +9,16 @@ export default async function Page({
 }) {
   const { erreur } = await searchParams;
   return (
-    <main style={{ fontFamily: "system-ui, sans-serif", maxWidth: 360, margin: "10vh auto", padding: 24 }}>
-      <h1>AgentKnowledge · Administration</h1>
+    <main className="ak-login">
       <form action="/api/admin/login" method="post">
-        <label>
-          Mot de passe
-          <input name="password" type="password" required autoFocus style={{ display: "block", width: "100%", padding: 8, margin: "8px 0 16px" }} />
-        </label>
-        <button type="submit" style={{ padding: "8px 16px" }}>Entrer</button>
+        <p className="ak-kicker" style={{ color: "#6d675c" }}>Bureau</p>
+        <h1>AgentKnowledge</h1>
+        <p className="ak-lead">Réservé à la relecture des fiches. Les agents passent par leur clé, pas par ici.</p>
+        <label htmlFor="password">Mot de passe</label>
+        <input id="password" name="password" type="password" required autoFocus />
+        <button className="ak-btn ak-btn-ink" type="submit">Entrer</button>
+        {erreur ? <p className="ak-error">Mot de passe incorrect.</p> : null}
       </form>
-      {erreur && <p style={{ color: "crimson" }}>Mot de passe incorrect.</p>}
     </main>
   );
 }
