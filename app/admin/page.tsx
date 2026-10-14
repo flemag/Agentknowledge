@@ -10,7 +10,7 @@ type CountRow = {
   quarantaine: number;
   deprecies: number;
 };
-type AgentRow = { total: number; actifs: number };
+type AgentRow = { total: number; actifs: number; credits_total: number };
 type ContribRow = { j1: number; j7: number };
 type DemandeRow = { vides_7j: number; repondues_7j: number };
 type FormatRow = { format: string; n: number };
@@ -33,7 +33,11 @@ export default async function Page({
   const entries = entriesRows[0];
 
   const agentRows = (await sql`
-    SELECT count(*)::int AS total, count(*) FILTER (WHERE actif)::int AS actifs FROM agent`) as AgentRow[];
+    SELECT
+      count(*)::int AS total,
+      count(*) FILTER (WHERE actif)::int AS actifs,
+      coalesce(sum(credits), 0)::int AS credits_total
+    FROM agent`) as AgentRow[];
   const agents = agentRows[0];
 
   const contribRows = (await sql`
@@ -62,7 +66,7 @@ export default async function Page({
 
   return (
     <>
-      <h1>Vue d'ensemble</h1>
+      <h1>Vue d&apos;ensemble</h1>
       <p className="ak-lead">Ce qui est public, ce qui attend un second avis, et ce que les agents demandent.</p>
 
       {remis ? (
@@ -77,7 +81,7 @@ export default async function Page({
         <section className="ak-callout">
           <p>
             {entries.quarantaine} fiche{entries.quarantaine > 1 ? "s" : ""} en quarantaine.
-            Tu peux les activer d'un coup pour alimenter l'API publique, ou les relire une par une.
+            Tu peux les activer d&apos;un coup pour alimenter l&apos;API publique, ou les relire une par une.
           </p>
           <div className="ak-row">
             <Link className="ak-btn ak-btn-ink" href="/admin/fiches?statut=quarantaine">Relire la quarantaine</Link>
@@ -107,10 +111,18 @@ export default async function Page({
         <div className="ak-kpi"><span>Actives</span><strong>{entries.actives}</strong><em>{entries.total} au total</em></div>
         <div className="ak-kpi"><span>Quarantaine</span><strong>{entries.quarantaine}</strong><em>invisibles au public</em></div>
         <div className="ak-kpi"><span>Dépréciées</span><strong>{entries.deprecies}</strong></div>
-        <div className="ak-kpi"><span>Agents</span><strong>{agents.total}</strong><em>{agents.actifs} actifs</em></div>
+        <div className="ak-kpi">
+          <span>Agents</span>
+          <strong>{agents.total}</strong>
+          <em>{agents.actifs} actifs · {agents.credits_total} crédits</em>
+        </div>
         <div className="ak-kpi"><span>Contributions 24 h</span><strong>{contrib.j1}</strong><em>{contrib.j7} sur 7 jours</em></div>
         <div className="ak-kpi"><span>Réponse 7 j</span><strong>{taux}</strong><em>{demandes.vides_7j} questions vides</em></div>
       </section>
+
+      <p className="ak-lead">
+        <Link href="/admin/agents">Gérer les agents →</Link>
+      </p>
 
       <section className="ak-grid two">
         <div className="ak-card">
