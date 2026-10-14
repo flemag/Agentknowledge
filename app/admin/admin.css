@@ -1,0 +1,238 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,650&family=Outfit:wght@400;500;600&display=swap");
+
+.ak {
+  --paper: #f3efe4;
+  --sheet: #fffdf8;
+  --ink: #1a1814;
+  --mute: #6d675c;
+  --line: #e4dccb;
+  --pine: #0e6b52;
+  --pine-ink: #f3faf6;
+  --copper: #a24b1c;
+  --copper-soft: #f6e7d8;
+  --danger: #8d2e2e;
+  --danger-soft: #f8e6e4;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+.ak-side {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 1.5rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ak-brand {
+  font-family: Fraunces, ui-serif, Georgia, serif;
+  font-size: 1.45rem;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.ak-kicker {
+  margin: 0.2rem 0 1.2rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  color: #c8bfae;
+}
+
+.ak-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ak-nav a {
+  color: var(--paper);
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 0.65rem 0.85rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.ak-nav a:hover { background: #2a261f; }
+
+.ak-logout {
+  margin-top: auto;
+  background: transparent;
+  color: #c8bfae;
+  border: 1px solid #3a342c;
+  border-radius: 999px;
+  min-height: 44px;
+  padding: 0 1rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+.ak-main { padding: 1.5rem 1.25rem 3rem; max-width: 1100px; }
+
+.ak h1 {
+  font-family: Fraunces, ui-serif, Georgia, serif;
+  font-size: 2.1rem;
+  font-weight: 560;
+  line-height: 1.1;
+  margin: 0 0 0.4rem;
+}
+
+.ak h2 {
+  font-family: Fraunces, ui-serif, Georgia, serif;
+  font-size: 1.35rem;
+  margin: 0 0 0.6rem;
+}
+
+.ak-lead { color: var(--mute); margin: 0 0 1rem; }
+
+.ak-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.ak-kpi, .ak-card, .ak-table {
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+}
+
+.ak-kpi { padding: 0.9rem 1rem; }
+.ak-kpi span { display: block; color: var(--mute); font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.ak-kpi strong { font-family: Fraunces, Georgia, serif; font-size: 1.8rem; font-weight: 560; }
+.ak-kpi em { display: block; color: var(--mute); font-style: normal; font-size: 0.8rem; }
+
+.ak-callout {
+  background: var(--copper-soft);
+  border: 1px solid #e4c3a8;
+  border-radius: 1rem;
+  padding: 1rem 1.1rem;
+  margin: 0 0 1rem;
+}
+
+.ak-callout p { margin: 0 0 0.75rem; }
+
+.ak-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+
+.ak-btn {
+  min-height: 44px;
+  border-radius: 0.8rem;
+  border: 1px solid var(--line);
+  background: var(--sheet);
+  color: var(--ink);
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.ak-btn:disabled { opacity: 0.45; cursor: default; }
+.ak-btn-pine { background: var(--pine); color: var(--pine-ink); border-color: var(--pine); }
+.ak-btn-ink { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.ak-btn-danger { color: var(--danger); background: var(--danger-soft); border-color: transparent; }
+
+.ak-grid { display: grid; gap: 0.75rem; }
+@media (min-width: 900px) {
+  .ak-grid.two { grid-template-columns: 1fr 1fr; }
+}
+
+.ak-card { padding: 1rem 1.05rem; }
+.ak-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.55rem; }
+.ak-pill {
+  border-radius: 999px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+}
+.ak-pill.on { background: var(--pine); color: var(--pine-ink); border-color: var(--pine); }
+.ak-pill.wait { background: var(--copper-soft); color: var(--copper); border-color: transparent; }
+.ak-pill.off { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
+
+.ak-card h3 {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  margin: 0 0 0.45rem;
+}
+
+.ak-card p { margin: 0.2rem 0; }
+.ak-card a { color: var(--pine); }
+
+.ak-note {
+  background: var(--paper);
+  border-radius: 0.8rem;
+  padding: 0.55rem 0.7rem;
+  margin-top: 0.45rem;
+}
+
+.ak-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+}
+
+.ak-filters input, .ak-filters select, .ak-login input {
+  min-height: 44px;
+  border-radius: 0.8rem;
+  border: 1px solid var(--line);
+  background: var(--sheet);
+  color: var(--ink);
+  padding: 0 0.75rem;
+  font: inherit;
+}
+
+.ak-filters input { flex: 1; min-width: 180px; }
+
+.ak-table { width: 100%; border-collapse: collapse; overflow: hidden; }
+.ak-table th, .ak-table td { text-align: left; padding: 0.7rem 0.85rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.ak-table th { color: var(--mute); font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
+
+.ak-error { color: var(--danger); font-size: 0.85rem; }
+
+.ak-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+  padding: 1.5rem;
+}
+
+.ak-login form {
+  width: min(420px, 100%);
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  padding: 1.4rem;
+}
+
+.ak-login h1 {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 2rem;
+  line-height: 1.1;
+  margin: 0 0 0.4rem;
+}
+
+.ak-login label { display: block; margin: 1rem 0 0.35rem; font-size: 0.9rem; }
+.ak-login input { width: 100%; box-sizing: border-box; }
+.ak-login button { margin-top: 1rem; }
+
+@media (max-width: 800px) {
+  .ak { grid-template-columns: 1fr; }
+  .ak-side { padding: 1rem; }
+  .ak-nav { flex-direction: row; overflow-x: auto; }
+  .ak-logout { margin-top: 0.8rem; }
+  .ak-kicker { margin-bottom: 0.6rem; }
+}
