@@ -13,27 +13,30 @@ export default async function Page() {
 
   return (
     <>
-      <h1>Questions sans réponse (30 jours)</h1>
-      <p>Ce sont les sujets à remplir en priorité.</p>
-      <table style={{ width: "100%", borderCollapse: "collapse", background: "white" }}>
-        <thead>
-          <tr style={{ textAlign: "left", borderBottom: "2px solid #e5e7eb" }}>
-            <th style={{ padding: 8 }}>Question</th>
-            <th style={{ padding: 8 }}>Occurrences</th>
-            <th style={{ padding: 8 }}>Dernière fois</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r: any) => (
-            <tr key={r.question} style={{ borderBottom: "1px solid #e5e7eb" }}>
-              <td style={{ padding: 8 }}>{r.question}</td>
-              <td style={{ padding: 8 }}>{r.n}</td>
-              <td style={{ padding: 8 }}>{new Date(r.dernier).toLocaleString("fr-FR")}</td>
+      <h1>Lacunes</h1>
+      <p className="ak-lead">Questions restées sans fiche active sur 30 jours. C'est l'ordre de remplissage.</p>
+      {rows.length === 0 ? (
+        <p className="ak-card">Aucune question vide. Le corpus répond à ce qui a été cherché.</p>
+      ) : (
+        <table className="ak-table">
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>Fois</th>
+              <th>Dernière</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {rows.length === 0 && <p>Aucune question sans réponse sur les 30 derniers jours.</p>}
+          </thead>
+          <tbody>
+            {rows.map((row: { question: string; n: number; dernier: string }) => (
+              <tr key={row.question}>
+                <td>{row.question}</td>
+                <td>{row.n}</td>
+                <td>{new Date(row.dernier).toLocaleString("fr-FR")}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </>
   );
 }
