@@ -1,20 +1,15 @@
+import Link from "next/link";
 import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-const card = { background: "white", border: "1px solid #e5e7eb", borderRadius: 8, padding: 16, minWidth: 160 };
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ remis?: string }>;
+}) {
+  const { remis } = await searchParams;
 
-function Kpi({ label, value, hint }: { label: string; value: number | string; hint?: string }) {
-  return (
-    <div style={card}>
-      <div style={{ fontSize: 12, color: "#6b7280" }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 700 }}>{value}</div>
-      {hint && <div style={{ fontSize: 12, color: "#6b7280" }}>{hint}</div>}
-    </div>
-  );
-}
-
-export default async function Page() {
   const [entries] = await sql`
     SELECT
       count(*)::int AS total,
@@ -41,7 +36,7 @@ export default async function Page() {
   const parFormat = await sql`SELECT format, count(*)::int AS n FROM entry GROUP BY format ORDER BY n DESC`;
   const parTag = await sql`
     SELECT tag, count(*)::int AS n FROM entry, unnest(tags) AS tag
-    GROUP BY tag ORDER BY n DESC LIMIT 15`;
+    GROUP BY tag ORDER BY n DESC LIMIT 12`;
 
   const taux =
     demandes.repondues_7j + demandes.vides_7j > 0
@@ -51,38 +46,58 @@ export default async function Page() {
   return (
     <>
       <h1>Vue d'ensemble</h1>
+      <p className="ak-lead">Ce qui est public, ce qui attend un second avis, et ce que les agents demandent.</p>
 
-      <section style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 32 }}>
-        <Kpi label="Fiches actives" value={entries.actives} hint={`${entries.total} au total`} />
-        <Kpi label="En quarantaine" value={entries.quarantaine} hint="à vérifier" />
-        <Kpi label="Dépréciées" value={entries.deprecies} />
-        <Kpi label="Agents" value={agents.total} hint={`${agents.actifs} actifs`} />
-        <Kpi label="Contributions 24 h" value={contrib.j1} hint={`${contrib.j7} sur 7 jours`} />
-        <Kpi label="Taux de réponse 7 j" value={taux} hint={`${demandes.vides_7j} questions sans réponse`} />
+      {remis ? (
+        <p className="ak-callout">{remis} fiche{remis === "1" ? "" : "s"} remise{remis === "1" ? "" : "s"} en quarantaine.</p>
+      ) : null}
+
+      {entries.quarantaine === 0 && entries.actives > 0 ? (
+        <section className="ak-callout">
+          <p>
+            Les fiches de départ sont toutes actives. Si tu les as validées pendant les tests, tu peux les
+            relire une par une, ou remettre le lot du 8 octobre 2026 en quarantaine.
+          </p>
+          <div className="ak-row">
+            <Link className="ak-btn ak-btn-ink" href="/admin/fiches?statut=active">Relire les fiches actives</Link>
+            <form action="/api/admin/depart" method="post">
+              <button className="ak-btn" type="submit">Remettre le lot de départ en quarantaine</button>
+            </form>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="ak-kpis">
+        <div className="ak-kpi"><span>Actives</span><strong>{entries.actives}</strong><em>{entries.total} au total</em></div>
+        <div className="ak-kpi"><span>Quarantaine</span><strong>{entries.quarantaine}</strong><em>invisibles au public</em></div>
+        <div className="ak-kpi"><span>Dépréciées</span><strong>{entries.deprecies}</strong></div>
+        <div className="ak-kpi"><span>Agents</span><strong>{agents.total}</strong><em>{agents.actifs} actifs</em></div>
+        <div className="ak-kpi"><span>Contributions 24 h</span><strong>{contrib.j1}</strong><em>{contrib.j7} sur 7 jours</em></div>
+        <div className="ak-kpi"><span>Réponse 7 j</span><strong>{taux}</strong><em>{demandes.vides_7j} questions vides</em></div>
       </section>
 
-      <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32 }}>
-        <div>
+      <section className="ak-grid two">
+        <div className="ak-card">
           <h2>Par format</h2>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <table className="ak-table">
             <tbody>
-              {parFormat.map((r: any) => (
-                <tr key={r.format} style={{ borderBottom: "1px solid #e5e7eb" }}>
-                  <td style={{ padding: 6 }}><code>{r.format}</code></td>
-                  <td style={{ padding: 6, textAlign: "right" }}>{r.n}</td>
+              {parFormat.map((row: { format: string; n: number }) => (
+                <tr key={row.format}>
+                  <td><Link href={`/admin/fiches?format=${row.format}`}>{row.format}</Link></td>
+                  <td style={{ textAlign: "right" }}>{row.n}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <div>
-          <h2>Tags les plus couverts</h2>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div className="ak-card">
+          <h2>Tags</h2>
+          <table className="ak-table">
             <tbody>
-              {parTag.map((r: any) => (
-                <tr key={r.tag} style={{ borderBottom: "1px solid #e5e7eb" }}>
-                  <td style={{ padding: 6 }}>{r.tag}</td>
-                  <td style={{ padding: 6, textAlign: "right" }}>{r.n}</td>
+              {parTag.map((row: { tag: string; n: number }) => (
+                <tr key={row.tag}>
+                  <td><Link href={`/admin/fiches?q=${encodeURIComponent(row.tag)}`}>{row.tag}</Link></td>
+                  <td style={{ textAlign: "right" }}>{row.n}</td>
                 </tr>
               ))}
             </tbody>
