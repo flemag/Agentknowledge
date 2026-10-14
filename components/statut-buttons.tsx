@@ -3,37 +3,42 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function StatutButtons({ id }: { id: string }) {
+const ACTIONS = [
+  { statut: "active", label: "Valider", tone: "ak-btn ak-btn-pine" },
+  { statut: "quarantaine", label: "Remettre en quarantaine", tone: "ak-btn" },
+  { statut: "deprecie", label: "Déprécier", tone: "ak-btn ak-btn-danger" },
+] as const;
+
+export default function StatutButtons({ id, statut }: { id: string; statut: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
-  async function changer(statut: "active" | "deprecie") {
+  async function changer(next: "active" | "quarantaine" | "deprecie") {
     setBusy(true);
     setErreur(null);
     const res = await fetch(`/api/admin/entries/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ statut }),
+      body: JSON.stringify({ statut: next }),
     });
     setBusy(false);
     if (!res.ok) {
-      const j = await res.json().catch(() => ({}));
-      setErreur(j.error ?? "échec de la mise à jour");
+      const body = await res.json().catch(() => ({}));
+      setErreur(body.error ?? "échec de la mise à jour");
       return;
     }
     router.refresh();
   }
 
   return (
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <button disabled={busy} onClick={() => changer("active")} style={{ padding: "6px 12px" }}>
-        Valider
-      </button>
-      <button disabled={busy} onClick={() => changer("deprecie")} style={{ padding: "6px 12px" }}>
-        Rejeter
-      </button>
-      {erreur && <span style={{ color: "crimson" }}>{erreur}</span>}
+    <div className="ak-row" style={{ marginTop: 12 }}>
+      {ACTIONS.filter((action) => action.statut !== statut).map((action) => (
+        <button key={action.statut} className={action.tone} disabled={busy} onClick={() => changer(action.statut)} type="button">
+          {action.label}
+        </button>
+      ))}
+      {erreur && <span className="ak-error">{erreur}</span>}
     </div>
   );
 }
