@@ -2,14 +2,16 @@ import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
+type Gap = { question: string; n: number; dernier: string };
+
 export default async function Page() {
-  const rows = await sql`
+  const rows = (await sql`
     SELECT question, count(*)::int AS n, max(created_at) AS dernier
     FROM demande
     WHERE resultat = 'vide' AND created_at > now() - interval '30 days'
     GROUP BY question
     ORDER BY n DESC, dernier DESC
-    LIMIT 50`;
+    LIMIT 50`) as Gap[];
 
   return (
     <>
@@ -27,7 +29,7 @@ export default async function Page() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row: { question: string; n: number; dernier: string }) => (
+            {rows.map((row) => (
               <tr key={row.question}>
                 <td>{row.question}</td>
                 <td>{row.n}</td>
