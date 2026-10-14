@@ -1,7 +1,20 @@
 import Link from "next/link";
 import { sql } from "@/lib/db";
+import DepartForm from "@/components/depart-form";
 
 export const dynamic = "force-dynamic";
+
+type CountRow = {
+  total: number;
+  actives: number;
+  quarantaine: number;
+  deprecies: number;
+};
+type AgentRow = { total: number; actifs: number };
+type ContribRow = { j1: number; j7: number };
+type DemandeRow = { vides_7j: number; repondues_7j: number };
+type FormatRow = { format: string; n: number };
+type TagRow = { tag: string; n: number };
 
 export default async function Page({
   searchParams,
@@ -10,33 +23,37 @@ export default async function Page({
 }) {
   const { remis } = await searchParams;
 
-  const [entries] = await sql`
+  const entriesRows = (await sql`
     SELECT
       count(*)::int AS total,
       count(*) FILTER (WHERE statut = 'active')::int AS actives,
       count(*) FILTER (WHERE statut = 'quarantaine')::int AS quarantaine,
       count(*) FILTER (WHERE statut = 'deprecie')::int AS deprecies
-    FROM entry`;
+    FROM entry`) as CountRow[];
+  const entries = entriesRows[0];
 
-  const [agents] = await sql`
-    SELECT count(*)::int AS total, count(*) FILTER (WHERE actif)::int AS actifs FROM agent`;
+  const agentRows = (await sql`
+    SELECT count(*)::int AS total, count(*) FILTER (WHERE actif)::int AS actifs FROM agent`) as AgentRow[];
+  const agents = agentRows[0];
 
-  const [contrib] = await sql`
+  const contribRows = (await sql`
     SELECT
       count(*) FILTER (WHERE created_at > now() - interval '24 hours')::int AS j1,
       count(*) FILTER (WHERE created_at > now() - interval '7 days')::int AS j7
-    FROM contribution`;
+    FROM contribution`) as ContribRow[];
+  const contrib = contribRows[0];
 
-  const [demandes] = await sql`
+  const demandeRows = (await sql`
     SELECT
       count(*) FILTER (WHERE resultat = 'vide' AND created_at > now() - interval '7 days')::int AS vides_7j,
       count(*) FILTER (WHERE resultat = 'repondu' AND created_at > now() - interval '7 days')::int AS repondues_7j
-    FROM demande`;
+    FROM demande`) as DemandeRow[];
+  const demandes = demandeRows[0];
 
-  const parFormat = await sql`SELECT format, count(*)::int AS n FROM entry GROUP BY format ORDER BY n DESC`;
-  const parTag = await sql`
+  const parFormat = (await sql`SELECT format, count(*)::int AS n FROM entry GROUP BY format ORDER BY n DESC`) as FormatRow[];
+  const parTag = (await sql`
     SELECT tag, count(*)::int AS n FROM entry, unnest(tags) AS tag
-    GROUP BY tag ORDER BY n DESC LIMIT 12`;
+    GROUP BY tag ORDER BY n DESC LIMIT 12`) as TagRow[];
 
   const taux =
     demandes.repondues_7j + demandes.vides_7j > 0
@@ -60,9 +77,7 @@ export default async function Page({
           </p>
           <div className="ak-row">
             <Link className="ak-btn ak-btn-ink" href="/admin/fiches?statut=active">Relire les fiches actives</Link>
-            <form action="/api/admin/depart" method="post">
-              <button className="ak-btn" type="submit">Remettre le lot de départ en quarantaine</button>
-            </form>
+            <DepartForm />
           </div>
         </section>
       ) : null}
@@ -81,7 +96,7 @@ export default async function Page({
           <h2>Par format</h2>
           <table className="ak-table">
             <tbody>
-              {parFormat.map((row: { format: string; n: number }) => (
+              {parFormat.map((row) => (
                 <tr key={row.format}>
                   <td><Link href={`/admin/fiches?format=${row.format}`}>{row.format}</Link></td>
                   <td style={{ textAlign: "right" }}>{row.n}</td>
@@ -94,7 +109,7 @@ export default async function Page({
           <h2>Tags</h2>
           <table className="ak-table">
             <tbody>
-              {parTag.map((row: { tag: string; n: number }) => (
+              {parTag.map((row) => (
                 <tr key={row.tag}>
                   <td><Link href={`/admin/fiches?q=${encodeURIComponent(row.tag)}`}>{row.tag}</Link></td>
                   <td style={{ textAlign: "right" }}>{row.n}</td>
