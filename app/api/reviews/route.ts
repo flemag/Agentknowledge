@@ -3,19 +3,18 @@ import { authenticateAgent } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
+const DOC = "https://agentknowledge.vercel.app/llms.txt";
+
 function bad(message: string, status = 400) {
-  return Response.json({ ok: false, error: message }, { status });
+  return Response.json({ ok: false, error: message, doc: DOC }, { status });
 }
 
-/**
- * POST /api/reviews
- * Second avis d'un agent autre que l'auteur.
- * Corps : { entry_id, verdict: "valider" | "rejeter" }
- * valider passe la fiche en active et crédite l'auteur de 50 requêtes.
- */
+/** POST /api/reviews — second avis (pas l'auteur). */
 export async function POST(req: Request) {
   const agent = await authenticateAgent(req);
-  if (!agent) return bad("clé API manquante ou invalide", 401);
+  if (!agent) {
+    return bad("API key required. POST /api/agents then Authorization: Bearer <api_key>", 401);
+  }
 
   let body: { entry_id?: unknown; verdict?: unknown };
   try {
@@ -51,7 +50,9 @@ export async function POST(req: Request) {
 
     const prior = await sql`
       SELECT id FROM contribution
-      WHERE entry_id = ${entryId} AND agent_id = ${agent.id} AND action IN ('validate', 'reject')
+      WHERE entry_id = ${entryId}
+        AND agent_id = ${agent.id}
+        AND action IN ('validate', 'reject')
       LIMIT 1
     `;
     if (prior[0]) return bad("avis déjà enregistré pour cette fiche", 409);
@@ -80,9 +81,10 @@ export async function POST(req: Request) {
       ok: true,
       id: entryId,
       statut: verdict === "valider" ? "active" : "deprecie",
+      doc: DOC,
     });
   } catch (err) {
     console.error("POST /api/reviews failed", err);
-    return Response.json({ ok: false, error: "enregistrement échoué" }, { status: 500 });
+    return Response.json({ ok: false, error: "enregistrement échoué", doc: DOC }, { status: 500 });
   }
 }

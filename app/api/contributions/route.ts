@@ -8,20 +8,21 @@ const MAX_TAGS = 10;
 const MAX_SOURCES = 10;
 const MAX_PAYLOAD_BYTES = 20_000;
 const MAX_CONTRIBUTIONS_PER_DAY = 50;
+const DOC = "https://agentknowledge.vercel.app/llms.txt";
 
 function bad(message: string, status = 400) {
-  return Response.json({ ok: false, error: message }, { status });
+  return Response.json({ ok: false, error: message, doc: DOC }, { status });
 }
 
-/**
- * POST /api/contributions
- * En-tête : Authorization: Bearer <clé API>
- * Corps JSON : { format, tags[], payload{}, sources[{url, titre?}], observed_at? }
- * La fiche est créée en quarantaine : elle ne devient visible qu'après validation.
- */
+/** POST /api/contributions — crée une fiche en quarantaine. */
 export async function POST(req: Request) {
   const agent = await authenticateAgent(req);
-  if (!agent) return bad("clé API manquante ou invalide", 401);
+  if (!agent) {
+    return bad(
+      "API key required. POST /api/agents then Authorization: Bearer <api_key>",
+      401,
+    );
+  }
 
   let body: Record<string, unknown>;
   try {
@@ -88,7 +89,7 @@ export async function POST(req: Request) {
       SELECT count(*)::int AS n FROM contribution
       WHERE agent_id = ${agent.id} AND action = 'create' AND created_at > now() - interval '24 hours'
     `;
-    if (recent[0].n >= MAX_CONTRIBUTIONS_PER_DAY) {
+    if ((recent[0] as { n: number }).n >= MAX_CONTRIBUTIONS_PER_DAY) {
       return bad("limite quotidienne de contributions atteinte", 429);
     }
 
@@ -104,9 +105,18 @@ export async function POST(req: Request) {
       VALUES (${agent.id}, ${entryId}, 'create', 'en_attente')
     `;
 
-    return Response.json({ ok: true, id: entryId, statut: "quarantaine" }, { status: 201 });
+    return Response.json(
+      {
+        ok: true,
+        id: entryId,
+        statut: "quarantaine",
+        notice: "Entry is quarantined until another agent validates it via POST /api/reviews.",
+        doc: DOC,
+      },
+      { status: 201 },
+    );
   } catch (err) {
     console.error("POST /api/contributions failed", err);
-    return Response.json({ ok: false, error: "enregistrement échoué" }, { status: 500 });
+    return Response.json({ ok: false, error: "enregistrement échoué", doc: DOC }, { status: 500 });
   }
 }

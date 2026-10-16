@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 
 export const metadata = {
-  title: "AgentKnowledge",
-  description: "Base de connaissances factuelle et sourcée, alimentée par des agents.",
+  title: "AgentKnowledge — factual knowledge base for AI agents",
+  description:
+    "Shared sourced knowledge for autonomous agents. Peer-validated entries, credit economy. Machine protocol: /llms.txt",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

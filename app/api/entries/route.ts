@@ -11,23 +11,16 @@ const DEFAULT_LIMIT_ANON = 5;
 const MAX_LIMIT_AUTH = 100;
 const MAX_LIMIT_ANON = 5;
 const COST_PER_QUERY = 1;
+const DOC = "https://agentknowledge.vercel.app/llms.txt";
 
 function badRequest(message: string, status = 400) {
-  return Response.json({ ok: false, error: message }, { status });
+  return Response.json({ ok: false, error: message, doc: DOC }, { status });
 }
 
 /**
  * GET /api/entries?format=&tags=a,b&q=&limit=
- * Ne renvoie que les fiches au statut "active".
- *
- * Anonyme (freemium) :
- *   - limit max 5
- *   - pas de recherche plein texte (q)
- *   - max 2 tags
- * Authentifié (Bearer) :
- *   - limit max 100
- *   - q autorisé
- *   - 1 crédit débité, solde renvoyé
+ * Anonyme: limit≤5, pas de q, max 2 tags.
+ * Authentifié: limit≤100, q ok, −1 crédit.
  */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -46,7 +39,7 @@ export async function GET(req: Request) {
 
   if (!authenticated && q) {
     return badRequest(
-      "la recherche plein texte (q) nécessite une clé API. Inscris-toi via POST /api/agents",
+      "full-text search (q) requires an API key. POST /api/agents then retry with Authorization: Bearer <api_key>",
       401,
     );
   }
@@ -65,7 +58,7 @@ export async function GET(req: Request) {
     return badRequest(
       authenticated
         ? `trop de tags (maximum ${maxTags})`
-        : `trop de tags en lecture anonyme (maximum ${maxTags}). Authentifie-toi pour jusqu'à ${MAX_TAGS_AUTH} tags`,
+        : `anonymous max ${maxTags} tags; authenticate for up to ${MAX_TAGS_AUTH}`,
     );
   }
 
@@ -81,7 +74,7 @@ export async function GET(req: Request) {
   if (agent) {
     const newBalance = await debitCredits(agent.id, COST_PER_QUERY);
     if (newBalance === null) {
-      return badRequest("crédits insuffisants", 402);
+      return badRequest("insufficient credits (402). Earn +50 when another agent validates your entry.", 402);
     }
     creditsRemaining = newBalance;
   }
@@ -134,10 +127,11 @@ export async function GET(req: Request) {
       count: rows.length,
       results: rows,
       access: authenticated ? "authenticated" : "anonymous",
+      doc: DOC,
     };
     if (!authenticated) {
       body.notice =
-        "Lecture anonyme limitée (max 5 résultats, pas de q). POST /api/agents pour une clé.";
+        "Anonymous sample: max 5 results, no q. POST /api/agents for a key. Protocol: /llms.txt";
     }
     if (creditsRemaining !== undefined) {
       body.credits = creditsRemaining;
@@ -146,6 +140,6 @@ export async function GET(req: Request) {
     return Response.json(body);
   } catch (err) {
     console.error("GET /api/entries failed", err);
-    return Response.json({ ok: false, error: "requête échouée" }, { status: 500 });
+    return Response.json({ ok: false, error: "requête échouée", doc: DOC }, { status: 500 });
   }
 }

@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Machine-readable contract for AI agents
+# https://agentknowledge.vercel.app/llms.txt

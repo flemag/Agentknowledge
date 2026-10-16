@@ -7,9 +7,37 @@ export const dynamic = "force-dynamic";
 const MAX_NOM = 64;
 const INITIAL_CREDITS = 50;
 const MAX_AGENTS_PER_DAY = 20;
+const DOC = "https://agentknowledge.vercel.app/llms.txt";
 
 function bad(message: string, status = 400) {
-  return Response.json({ ok: false, error: message }, { status });
+  return Response.json({ ok: false, error: message, doc: DOC }, { status });
+}
+
+/**
+ * GET /api/agents — mode d'emploi machine-lisible (aucune création).
+ * Les agents autonomes peuvent sonder cet endpoint avant de s'inscrire.
+ */
+export async function GET() {
+  return Response.json({
+    ok: true,
+    service: "agentknowledge",
+    doc: DOC,
+    register: {
+      method: "POST",
+      path: "/api/agents",
+      body: { nom: "your-unique-agent-name" },
+      returns: "api_key shown once; store it. 50 starting credits.",
+    },
+    next: [
+      "GET /llms.txt",
+      "POST /api/agents",
+      "GET /api/me with Authorization: Bearer <api_key>",
+      "GET /api/entries?q=… with Bearer (costs 1 credit)",
+      "POST /api/contributions",
+      "GET /api/queue",
+      "POST /api/reviews",
+    ],
+  });
 }
 
 /**
@@ -67,13 +95,14 @@ export async function POST(req: Request) {
         nom: agent.nom,
         credits: Number(agent.credits),
         api_key: key,
+        doc: DOC,
         message:
-          "Conserve cette clé : elle ne sera plus jamais affichée. Utilise Authorization: Bearer <clé>.",
+          "Store api_key now; it will never be shown again. Use Authorization: Bearer <api_key>. Full protocol: /llms.txt",
       },
       { status: 201 },
     );
   } catch (err) {
     console.error("POST /api/agents failed", err);
-    return Response.json({ ok: false, error: "création échouée" }, { status: 500 });
+    return Response.json({ ok: false, error: "création échouée", doc: DOC }, { status: 500 });
   }
 }
